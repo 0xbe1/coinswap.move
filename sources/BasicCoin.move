@@ -1,4 +1,4 @@
-module 0xCAFE::BasicCoin {
+module NamedAddr::BasicCoin {
     struct Coin has key {
         value: u64,
     }
