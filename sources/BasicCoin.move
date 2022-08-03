@@ -1,16 +1,27 @@
 module NamedAddr::BasicCoin {
-    struct Coin has key {
+    use std::signer;
+
+    struct Coin has store {
         value: u64,
     }
 
-    public fun mint(account: signer, value: u64) {
-        move_to(&account, Coin { value })
+    struct Balance has key {
+        coin: Coin
+    }
+
+    /// Publish an empty balance resource under `account`'s address. This function must be called before
+    /// minting or transferring to the account.
+    public fun publish_balance(account: &signer) {
+        let addr = signer::address_of(account);
+        assert!(!exists<Balance>(addr), 0);
+        let empty_coin = Coin { value: 0 };
+        move_to(account, Balance { coin: empty_coin });
     }
 
     #[test(account = @0xC0FFEE)]
-    fun test_mint(account: signer) acquires Coin {
-        let addr = 0x1::signer::address_of(&account);
-        mint(account, 10);
-        assert!(borrow_global<Coin>(addr).value == 10, 0);
+    fun test_publish_balance(account: &signer) acquires Balance {
+        let addr = signer::address_of(account);
+        publish_balance(account);
+        assert!(borrow_global<Balance>(addr).coin.value == 0, 0);
     }
 }
