@@ -8,6 +8,7 @@ module NamedAddr::BasicCoin {
     const ENOT_MODULE_OWNER: u64 = 0;
     const EINSUFFICIENT_BALANCE: u64 = 1;
     const EALREADY_HAS_BALANCE: u64 = 2;
+    const EEQUAL_ADDR: u64 = 3;
 
     struct Coin<phantom CoinType> has store {
         value: u64,
@@ -38,6 +39,8 @@ module NamedAddr::BasicCoin {
 
     /// Transfers `amount` of tokens from `from` to `to`.
     public fun transfer<CoinType>(from: &signer, to: address, amount: u64) acquires Balance {
+        let from_addr = signer::address_of(from);
+        assert!(from_addr != to, EEQUAL_ADDR);
         let check = withdraw<CoinType>(signer::address_of(from), amount);
         deposit<CoinType>(to, check);
     }
