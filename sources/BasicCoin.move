@@ -1,4 +1,4 @@
-module NamedAddr::BasicCoin {
+module BasicCoin::BasicCoin {
     use std::signer;
 
     /// Error codes
