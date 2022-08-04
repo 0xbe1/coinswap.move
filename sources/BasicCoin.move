@@ -2,10 +2,10 @@ module NamedAddr::BasicCoin {
     use std::signer;
 
     /// Address of the owner of this module
-    const MODULE_OWNER: address = @NamedAddr;
+    // const MODULE_OWNER: address = @NamedAddr;
 
     /// Error codes
-    const ENOT_MODULE_OWNER: u64 = 0;
+    // const ENOT_MODULE_OWNER: u64 = 0;
     const EINSUFFICIENT_BALANCE: u64 = 1;
     const EALREADY_HAS_BALANCE: u64 = 2;
     const EEQUAL_ADDR: u64 = 3;
@@ -31,9 +31,7 @@ module NamedAddr::BasicCoin {
         borrow_global<Balance<CoinType>>(owner).coin.value
     }
 
-    public fun mint<CoinType>(module_owner: &signer, mint_addr: address, amount: u64) acquires Balance {
-        // Only the module owner can initialize this module
-        assert!(signer::address_of(module_owner) == MODULE_OWNER, ENOT_MODULE_OWNER);
+    public fun mint<CoinType>(mint_addr: address, amount: u64) acquires Balance {
         deposit<CoinType>(mint_addr, Coin<CoinType> { value: amount});
     }
 
@@ -71,7 +69,6 @@ module NamedAddr::BasicCoin {
     #[test(account = @0x1)]
     #[expected_failure(abort_code = 2)]
     fun publish_balance_fail_on_exist(account: &signer) {
-        // let addr = signer::address_of(account);
         publish_balance<TestCoin>(account);
         publish_balance<TestCoin>(account);
     }
@@ -84,17 +81,9 @@ module NamedAddr::BasicCoin {
     }
 
     #[test(account = @0x1)]
-    #[expected_failure(abort_code = 0)]
-    fun mint_fail_on_non_owner(account: &signer) acquires Balance {
-        publish_balance<TestCoin>(account);
-        assert!(signer::address_of(account) != MODULE_OWNER, 0);
-        mint<TestCoin>(account, @0x1, 10);
-    }
-
-    #[test(account = @NamedAddr)]
     fun mint_ok(account: &signer) acquires Balance {
         publish_balance<TestCoin>(account);
-        mint<TestCoin>(account, @NamedAddr, 10);
+        mint<TestCoin>(@0x1, 10);
         assert!(balance_of<TestCoin>(signer::address_of(account)) == 10, 0);
     }
 
@@ -110,7 +99,7 @@ module NamedAddr::BasicCoin {
     fun withdraw_ok(account: &signer) acquires Balance {
         let addr = signer::address_of(account);
         publish_balance<TestCoin>(account);
-        mint<TestCoin>(account, addr, 10);
+        mint<TestCoin>(addr, 10);
         let Coin { value: amount } = withdraw<TestCoin>(addr, 10);
         assert!(amount == 10, 0);
     }
