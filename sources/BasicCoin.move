@@ -1,11 +1,7 @@
 module NamedAddr::BasicCoin {
     use std::signer;
 
-    /// Address of the owner of this module
-    // const MODULE_OWNER: address = @NamedAddr;
-
     /// Error codes
-    // const ENOT_MODULE_OWNER: u64 = 0;
     const EINSUFFICIENT_BALANCE: u64 = 1;
     const EALREADY_HAS_BALANCE: u64 = 2;
     const EEQUAL_ADDR: u64 = 3;
@@ -35,6 +31,10 @@ module NamedAddr::BasicCoin {
         deposit<CoinType>(mint_addr, Coin<CoinType> { value: amount});
     }
 
+    public fun burn<CoinType>(burn_addr: address, amount: u64) acquires Balance {
+        let Coin { value: _ } = withdraw<CoinType>(burn_addr, amount);
+    }
+
     /// Transfers `amount` of tokens from `from` to `to`.
     public fun transfer<CoinType>(from: &signer, to: address, amount: u64) acquires Balance {
         let from_addr = signer::address_of(from);
@@ -44,7 +44,7 @@ module NamedAddr::BasicCoin {
     }
 
     /// Withdraw `amount` number of tokens from the balance under `addr`.
-    fun withdraw<CoinType>(addr: address, amount: u64) : Coin<CoinType> acquires Balance {
+    fun withdraw<CoinType>(addr: address, amount: u64): Coin<CoinType> acquires Balance {
         let balance = balance_of<CoinType>(addr);
         assert!(balance >= amount, EINSUFFICIENT_BALANCE);
         let balance_ref = &mut borrow_global_mut<Balance<CoinType>>(addr).coin.value;
@@ -89,18 +89,19 @@ module NamedAddr::BasicCoin {
 
     #[test(account = @0x1)]
     #[expected_failure(abort_code = 1)]
-    fun withdraw_fail_on_insufficient_balance(account: &signer) acquires Balance {
+    fun burn_fail_on_insufficient_balance(account: &signer) acquires Balance {
         let addr = signer::address_of(account);
         publish_balance<TestCoin>(account);
-        Coin { value: _ } = withdraw<TestCoin>(addr, 10);
+        burn<TestCoin>(addr, 10);
     }
 
-    #[test(account = @NamedAddr)]
-    fun withdraw_ok(account: &signer) acquires Balance {
+    #[test(account = @0x1)]
+    fun burn_ok(account: &signer) acquires Balance {
         let addr = signer::address_of(account);
         publish_balance<TestCoin>(account);
         mint<TestCoin>(addr, 10);
-        let Coin { value: amount } = withdraw<TestCoin>(addr, 10);
-        assert!(amount == 10, 0);
+        assert!(balance_of<TestCoin>(addr) == 10, 0);
+        burn<TestCoin>(addr, 10);
+        assert!(balance_of<TestCoin>(addr) == 0, 0);
     }
 }
