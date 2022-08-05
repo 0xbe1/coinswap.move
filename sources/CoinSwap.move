@@ -1,7 +1,7 @@
-module CoinSwap::CoinSwap {
+module coin_swap::CoinSwap {
     use std::signer;
-    use CoinSwap::BasicCoin;
-    use CoinSwap::PoolToken;
+    use coin_swap::BasicCoin;
+    use coin_swap::PoolToken;
 
     const ECOINSWAP_ADDRESS: u64 = 0;
     const EPOOL: u64 = 1;
@@ -21,7 +21,7 @@ module CoinSwap::CoinSwap {
         // witness1: CoinType1,
         // witness2: CoinType2
     ) {
-        assert!(signer::address_of(coinswap) == @CoinSwap, ECOINSWAP_ADDRESS);
+        assert!(signer::address_of(coinswap) == @coin_swap, ECOINSWAP_ADDRESS);
         assert!(!exists<LiquidityPool<CoinType1, CoinType2>>(signer::address_of(coinswap)), EPOOL);
 
         // TODO: Alternatively, `struct LiquidityPool` could be refactored to actually hold the coin (e.g., coin1: CoinType1).
@@ -33,7 +33,7 @@ module CoinSwap::CoinSwap {
         };
         move_to(coinswap, LiquidityPool<CoinType1, CoinType2>{coin1, coin2, share});
 
-        // Transfer the initial liquidity of CoinType1 and CoinType2 to the pool under @CoinSwap.
+        // Transfer the initial liquidity of CoinType1 and CoinType2 to the pool under @coin_swap.
         BasicCoin::transfer<CoinType1>(requester, signer::address_of(coinswap), coin1);
         BasicCoin::transfer<CoinType2>(requester, signer::address_of(coinswap), coin2);
 
@@ -48,7 +48,7 @@ module CoinSwap::CoinSwap {
         // witness1: CoinType1,
         // witness2: CoinType2
     ) acquires LiquidityPool {
-        assert!(signer::address_of(coinswap) == @CoinSwap, ECOINSWAP_ADDRESS);
+        assert!(signer::address_of(coinswap) == @coin_swap, ECOINSWAP_ADDRESS);
         assert!(exists<LiquidityPool<CoinType1, CoinType2>>(signer::address_of(coinswap)), EPOOL);
         let pool = borrow_global_mut<LiquidityPool<CoinType1, CoinType2>>(signer::address_of(coinswap));
         let coin2 = get_input_price(coin1, pool.coin1, pool.coin2);
@@ -66,7 +66,7 @@ module CoinSwap::CoinSwap {
         // witness1: CoinType1,
         // witness2: CoinType2,
     ) acquires LiquidityPool {
-        let pool = borrow_global_mut<LiquidityPool<CoinType1, CoinType2>>(@CoinSwap);
+        let pool = borrow_global_mut<LiquidityPool<CoinType1, CoinType2>>(@coin_swap);
 
         let coin1_added = coin1;
         let share_minted = (coin1_added * pool.share) / pool.coin1;
@@ -76,8 +76,8 @@ module CoinSwap::CoinSwap {
         pool.coin2 = pool.coin2 + coin2_added;
         pool.share = pool.share + share_minted;
 
-        BasicCoin::transfer<CoinType1>(account, @CoinSwap, coin1);
-        BasicCoin::transfer<CoinType2>(account, @CoinSwap, coin2);
+        BasicCoin::transfer<CoinType1>(account, @coin_swap, coin1);
+        BasicCoin::transfer<CoinType2>(account, @coin_swap, coin2);
         PoolToken::mint<CoinType1, CoinType2>(signer::address_of(account), share_minted)
     }
 
@@ -88,7 +88,7 @@ module CoinSwap::CoinSwap {
         // witness1: CoinType1,
         // witness2: CoinType2,
     ) acquires LiquidityPool {
-        let pool = borrow_global_mut<LiquidityPool<CoinType1, CoinType2>>(@CoinSwap);
+        let pool = borrow_global_mut<LiquidityPool<CoinType1, CoinType2>>(@coin_swap);
 
         let coin1_removed = (pool.coin1 * share) / pool.share;
         let coin2_removed = (pool.coin2 * share) / pool.share;
@@ -128,7 +128,7 @@ module CoinSwap::CoinSwap {
         create_pool<CoinA, CoinB>(coinswap, requester, 10, 10, 1);
     }
 
-    #[test(coinswap = @CoinSwap, requester = @0x1)]
+    #[test(coinswap = @coin_swap, requester = @0x1)]
     fun create_pools_ok(coinswap: &signer, requester: &signer) {
         BasicCoin::setup_and_mint<CoinA>(requester, 100);
         BasicCoin::setup_and_mint<CoinB>(requester, 100);
@@ -138,7 +138,7 @@ module CoinSwap::CoinSwap {
         create_pool<CoinA, CoinC>(coinswap, requester, 10, 10, 1);
     }
 
-    #[test(coinswap = @CoinSwap, requester = @0x1)]
+    #[test(coinswap = @coin_swap, requester = @0x1)]
     fun create_pool_ok(coinswap: &signer, requester: &signer) acquires LiquidityPool {
         BasicCoin::setup_and_mint<CoinA>(requester, 100);
         BasicCoin::setup_and_mint<CoinB>(requester, 100);
@@ -155,7 +155,7 @@ module CoinSwap::CoinSwap {
         assert!(BasicCoin::balance_of<CoinB>(requester_addr) == 90, 0);
     }
 
-    #[test(coinswap = @CoinSwap, requester = @0x1)]
+    #[test(coinswap = @coin_swap, requester = @0x1)]
     fun add_liquidity_ok(coinswap: &signer, requester: &signer) acquires LiquidityPool {
         BasicCoin::setup_and_mint<CoinA>(requester, 100);
         BasicCoin::setup_and_mint<CoinB>(requester, 100);
@@ -176,7 +176,7 @@ module CoinSwap::CoinSwap {
         assert!(PoolToken::balance_of<CoinA, CoinB>(requester_addr) == 10, 0)
     }
 
-    #[test(coinswap = @CoinSwap, requester = @0x1)]
+    #[test(coinswap = @coin_swap, requester = @0x1)]
     fun remove_liquidity_ok(coinswap: &signer, requester: &signer) acquires LiquidityPool {
         BasicCoin::setup_and_mint<CoinA>(requester, 100);
         BasicCoin::setup_and_mint<CoinB>(requester, 100);

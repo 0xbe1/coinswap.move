@@ -1,6 +1,6 @@
-module CoinSwap::PoolToken {
+module coin_swap::PoolToken {
     use std::signer;
-    use CoinSwap::BasicCoin;
+    use coin_swap::BasicCoin;
 
     struct PoolToken<phantom CoinType1, phantom CoinType2> {}
 
