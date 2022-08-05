@@ -1,6 +1,6 @@
 module CoinSwap::CoinSwap {
     use std::signer;
-    use BasicCoin::BasicCoin;
+    use CoinSwap::BasicCoin;
     use CoinSwap::PoolToken;
 
     const ECOINSWAP_ADDRESS: u64 = 0;

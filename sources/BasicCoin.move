@@ -1,4 +1,4 @@
-module BasicCoin::BasicCoin {
+module CoinSwap::BasicCoin {
     use std::signer;
 
     /// Error codes

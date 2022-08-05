@@ -8,4 +8,3 @@ MoveStdlib = { git = "https://github.com/move-language/move.git", subdir = "lang
 [addresses]
 std =  "0x1"
 CoinSwap = "0xC5"
-BasicCoin = "0xBC"
