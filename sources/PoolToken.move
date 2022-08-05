@@ -21,19 +21,25 @@ module CoinSwap::PoolToken {
         BasicCoin::burn<PoolToken<CoinType1, CoinType2>>(burn_addr, amount);
     }
 
+    public fun balance_of<CoinType1, CoinType2>(owner: address): u64 {
+        BasicCoin::balance_of<PoolToken<CoinType1, CoinType2>>(owner)
+    }
+
     //
     // Tests
     //
     #[test_only]
     struct CoinA {}
+
+    #[test_only]
     struct CoinB {}
 
     #[test(account = @0x1)]
     fun end_to_end(account: &signer) {
         let addr = signer::address_of(account);
         setup_and_mint<CoinA, CoinB>(account, 10);
-        assert!(BasicCoin::balance_of<PoolToken<CoinA, CoinB>>(addr) == 10, 0);
+        assert!(balance_of<CoinA, CoinB>(addr) == 10, 0);
         burn<CoinA, CoinB>(addr, 10);
-        assert!(BasicCoin::balance_of<PoolToken<CoinA, CoinB>>(addr) == 0, 0);
+        assert!(balance_of<CoinA, CoinB>(addr) == 0, 0);
     }
 }

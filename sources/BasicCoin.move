@@ -14,12 +14,21 @@ module BasicCoin::BasicCoin {
         coin: Coin<CoinType>
     }
 
+    public fun setup_and_mint<CoinType>(account: &signer, amount: u64) acquires Balance {
+        publish_balance<CoinType>(account);
+        mint<CoinType>(signer::address_of(account), amount);
+    }
+
     /// Publish an empty balance resource under `account`'s address. This function must be called before
     /// minting or transferring to the account.
     public fun publish_balance<CoinType>(account: &signer) {
-        assert!(!exists<Balance<CoinType>>(signer::address_of(account)), EALREADY_HAS_BALANCE);
+        assert!(!has_balance<CoinType>(account), EALREADY_HAS_BALANCE);
         let empty_coin = Coin<CoinType> { value: 0 };
         move_to(account, Balance<CoinType> { coin: empty_coin });
+    }
+
+    public fun has_balance<CoinType>(account: &signer): bool {
+        exists<Balance<CoinType>>(signer::address_of(account))
     }
 
     /// Returns the balance of `owner`.

@@ -1,5 +1,5 @@
 [package]
-name = "BasicCoin"
+name = "CoinSwap"
 version = "0.0.0"
 
 [dependencies]
